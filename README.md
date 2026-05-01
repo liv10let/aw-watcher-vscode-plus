@@ -1,93 +1,95 @@
-# aw-watcher-vscode
+# aw-watcher-vscode-plus
 
-This extension allows [ActivityWatch](https://activitywatch.net), the free and open-source time tracker, to keep track of the projects and programming languages you use in VS Code.
+[中文版 (Chinese)](README_zh.md)
 
-The extension is published on [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=activitywatch.aw-watcher-vscode) and [Open VSX](https://open-vsx.org/extension/ActivityWatch/aw-watcher-vscode).
+VS Code extension for [ActivityWatch](https://activitywatch.net), the free and open-source time tracker. Tracks the projects, programming languages, and files you work on in VS Code.
 
-The source code is available at https://github.com/ActivityWatch/aw-watcher-vscode
+This fork adds **HTTP Basic Auth support** for connecting to ActivityWatch servers behind an nginx reverse proxy.
 
 ## Features
 
-Sends following data to ActivityWatch:
-- current project name
-- programming language
-- current file name
-- current Git branch
+Sends the following data to ActivityWatch:
+- Current project name
+- Programming language
+- Current file name
+- Current Git branch
 
-Currently VS Code extensions don't support getting file/project names for non-editable files, therefore this results in the value "unknown" for those properties. (For instance when opening logo.png this happens)
+## Installation
 
-## Requirements
+### From source (this fork)
 
-This extension requires ActivityWatch to be running on your machine.
+```bash
+git clone https://github.com/liv10let/aw-watcher-vscode-plus.git
+cd aw-watcher-vscode-plus
+git submodule update --init --recursive
+npm install
+npm run compile
+```
 
-## Install Instructions
+Then copy or symlink the folder to your VS Code extensions directory:
+- **Windows:** `%USERPROFILE%\.vscode\extensions\aw-watcher-vscode-plus`
+- **macOS:** `~/.vscode/extensions/aw-watcher-vscode-plus`
+- **Linux:** `~/.vscode/extensions/aw-watcher-vscode-plus`
 
-To install this extension, search for aw-watcher-vscode in the Extensions sidebar in VS Code, and install the one with ActivityWatch as the publisher name. And that's it, if Activity Watch was running, it should detect this vs-code watcher automatically. Give it some time to have some data to display and it should show in the ActivityWatch Timeline and Activity sections soon.
+### From marketplace (original, no Basic Auth)
 
-## Commands
+Search for `aw-watcher-vscode` in the VS Code Extensions sidebar.
 
-#### Reload ActivityWatch
+## Configuration
 
-Use this in case VS Code has been started before the AW server.
+Open VS Code Settings (Ctrl+,) and search for `aw-watcher-vscode`, or edit `settings.json` directly:
 
-## Extension Settings
+```json
+{
+    "aw-watcher-vscode.host": "your-server.example.com",
+    "aw-watcher-vscode.port": 5601,
+    "aw-watcher-vscode.authUser": "your_username",
+    "aw-watcher-vscode.authPassword": "your_password",
+    "aw-watcher-vscode.maxHeartbeatsPerSec": 1
+}
+```
 
-This extension adds the following settings:
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `aw-watcher-vscode.host` | `""` | ActivityWatch server hostname. Leave empty for localhost. |
+| `aw-watcher-vscode.port` | `0` | ActivityWatch server port. Set to 0 for default (5600). |
+| `aw-watcher-vscode.authUser` | `""` | HTTP Basic Auth username |
+| `aw-watcher-vscode.authPassword` | `""` | HTTP Basic Auth password |
+| `aw-watcher-vscode.maxHeartbeatsPerSec` | `1` | Max heartbeats per second |
 
-- `aw-watcher-vscode.maxHeartbeatsPerSec`: Controls the maximum number of heartbeats sent per second.
-<!--
-TODO:
-* `aw-watcher-vscode.enable`: enable/disable this extension
--->
+## Usage
 
-## Error reporting
+1. Configure the server address and credentials in VS Code settings (see above)
+2. Open any project in VS Code
+3. The extension automatically sends heartbeat events to your ActivityWatch server
 
-If you run into any errors or have feature requests, please [open an issue](https://github.com/ActivityWatch/aw-watcher-vscode).
+Use the **Reload ActivityWatch** command if VS Code was started before the AW server.
 
-<!--
-## Known Issues
+## Technical notes
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
--->
+### How Basic Auth is implemented
 
-## Release Notes
+The `aw-client-js` library uses the native `fetch` API for HTTP requests. The `AWClient` constructor accepts an `auth` option and encodes it into a `Basic` authorization header:
 
-### 0.5.0
+```typescript
+const clientOptions = {
+    baseURL: `http://${host}:${port}`,
+    auth: { username: authUser, password: authPassword }
+};
+this._client = new AWClient(clientName, clientOptions);
+```
 
- - Updated publisherId to `activitywatch`.
- - Added support for VSCodium.
- - Added support for VSCode remote.
+The constructor encodes `username:password` as Base64 and stores it. Each `_get`, `_post`, and `_delete` call attaches the `Authorization: Basic <base64>` header to the request.
 
-### 0.4.1
+### Differences from the Python watchers
 
-Updated aw-client-js, media and npm dependencies.
+Unlike the Python `aw-client` library where method patching is required, the JS client cleanly supports the `auth` option in its constructor — the Authorization header is added to every request automatically.
 
-### 0.4.0
+## Related projects
 
-Updated submodules aw-client-js and media to latest
+- [aw-watcher-window-plus](https://github.com/liv10let/aw-watcher-window-plus) — Window activity watcher with Basic Auth
+- [aw-watcher-afk-plus](https://github.com/liv10let/aw-watcher-afk-plus) — AFK watcher with Basic Auth + background daemon
 
-fixed the extension to work with the latest aw-client:
-- AppEditorActivityHeartbeat --> IAppEditorEvent
-- createBucket --> ensureBucket
-- options object in AWClient constructor
-- timestamp should be a Date not a string
+## License
 
-### 0.3.3
-
-Fixed security vulnerability of an outdated dependency.
-
-### 0.3.2
-
-Added `maxHeartbeatsPerSec` configuration.
-
-### 0.3.0
-
-Refined error handling and heartbeat logic.
-
-### 0.2.0
-
-Refined error handling and README.
-
-### 0.1.0
-
-Initial release of aw-watcher-vscode.
+MPL-2.0

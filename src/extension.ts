@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the necessary extensibility types to use in your code below
 import { Disposable, ExtensionContext, commands, window, workspace, Uri, Extension, extensions } from 'vscode';
-import { AWClient, IAppEditorEvent } from '../aw-client-js/src/aw-client';
+import { AWClient, IAppEditorEvent } from '../aw-client-js/aw-client';
 import { hostname } from 'os';
 import { API, GitExtension } from './git';
 
@@ -50,8 +50,25 @@ class ActivityWatch {
         };
         this._bucket.id = `${this._bucket.clientName}_${this._bucket.hostName}`;
 
+        // Read server configuration
+        const extConfig = workspace.getConfiguration('aw-watcher-vscode');
+        const host = extConfig.get<string>('host') || '';
+        const port = extConfig.get<number>('port') || 0;
+        const authUser = extConfig.get<string>('authUser') || '';
+        const authPassword = extConfig.get<string>('authPassword') || '';
+
+        // Build client options
+        const clientOptions: any = { testing: false };
+        if (host) {
+            const effectivePort = port || 5600;
+            clientOptions.baseURL = `http://${host}:${effectivePort}`;
+        }
+        if (authUser && authPassword) {
+            clientOptions.auth = { username: authUser, password: authPassword };
+        }
+
         // Create AWClient
-        this._client = new AWClient(this._bucket.clientName, { testing: false });
+        this._client = new AWClient(this._bucket.clientName, clientOptions);
 
         // subscribe to VS Code Events
         let subscriptions: Disposable[] = [];
