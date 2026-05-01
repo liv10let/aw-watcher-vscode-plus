@@ -21,15 +21,19 @@ Sends the following data to ActivityWatch:
 ```bash
 git clone https://github.com/liv10let/aw-watcher-vscode-plus.git
 cd aw-watcher-vscode-plus
-git submodule update --init --recursive
 npm install
 npm run compile
 ```
 
-Then copy or symlink the folder to your VS Code extensions directory:
-- **Windows:** `%USERPROFILE%\.vscode\extensions\aw-watcher-vscode-plus`
-- **macOS:** `~/.vscode/extensions/aw-watcher-vscode-plus`
-- **Linux:** `~/.vscode/extensions/aw-watcher-vscode-plus`
+Then symlink the folder to your VS Code extensions directory:
+
+```bash
+# Windows (PowerShell, as Admin)
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.vscode\extensions\aw-watcher-vscode-plus" -Target "path\to\aw-watcher-vscode-plus"
+
+# macOS / Linux
+ln -s /path/to/aw-watcher-vscode-plus ~/.vscode/extensions/aw-watcher-vscode-plus
+```
 
 ### From marketplace (original, no Basic Auth)
 

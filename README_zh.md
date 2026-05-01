@@ -21,15 +21,19 @@
 ```bash
 git clone https://github.com/liv10let/aw-watcher-vscode-plus.git
 cd aw-watcher-vscode-plus
-git submodule update --init --recursive
 npm install
 npm run compile
 ```
 
-然后将文件夹复制或软链接到 VS Code 扩展目录：
-- **Windows：** `%USERPROFILE%\.vscode\extensions\aw-watcher-vscode-plus`
-- **macOS：** `~/.vscode/extensions/aw-watcher-vscode-plus`
-- **Linux：** `~/.vscode/extensions/aw-watcher-vscode-plus`
+然后将项目目录软链接到 VS Code 扩展目录：
+
+```bash
+# Windows（PowerShell，管理员）
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.vscode\extensions\aw-watcher-vscode-plus" -Target "你的项目路径\aw-watcher-vscode-plus"
+
+# macOS / Linux
+ln -s /你的项目路径/aw-watcher-vscode-plus ~/.vscode/extensions/aw-watcher-vscode-plus
+```
 
 ### 从插件市场安装（原版，不支持 Basic Auth）
 
