@@ -118,7 +118,7 @@ async function fetchWithFailure(
             if (res.status >= 300) throw new FetchError(res);
             return res;
         })
-        .finally(() => clearTimeout(timeoutId));
+        .finally(() => { if (timeoutId !== undefined) clearTimeout(timeoutId); });
 }
 
 export class AWClient {

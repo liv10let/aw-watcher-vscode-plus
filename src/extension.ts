@@ -144,7 +144,7 @@ class ActivityWatch {
     private _sendHeartbeat(event: IAppEditorEvent) {
         return this._client.heartbeat(this._bucket.id, this._pulseTime, event)
             .then(() => console.log('Sent heartbeat', event))
-            .catch(({ err }) => {
+            .catch((err) => {
                 console.error('sendHeartbeat error: ', err);
                 this._handleError('Error while sending heartbeat', true);
             });
